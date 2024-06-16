@@ -73,6 +73,8 @@ TODO:
 - check other services
 - render service providers (rooms) on the map
 - fix startup when script is not loaded for a map
+- log path / log library
+- render not plebs, but their homes
  */
 
 class FulfilmentProviderServer(private val script: FulfilmentProviderScript) {

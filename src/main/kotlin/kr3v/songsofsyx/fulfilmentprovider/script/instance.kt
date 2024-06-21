@@ -1,16 +1,10 @@
 package kr3v.songsofsyx.fulfilmentprovider.script
 
 import game.time.TIME
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.cio.*
-import io.ktor.server.engine.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import kr3v.songsofsyx.fulfilmentprovider.script.Constants.PORT
-import script.SCRIPT
+import kr3v.songsofsyx.fulfilmentprovider.Log
 import script.SCRIPT.SCRIPT_INSTANCE
 import settlement.entity.humanoid.Humanoid
+import settlement.entity.humanoid.ai.main.AIManager
 import settlement.main.SETT
 import settlement.stats.STATS
 import snake2d.util.datatypes.COORDINATE
@@ -57,6 +51,8 @@ object Services {
 }
 
 ///
+
+typealias State = List<FulfilmentProviderScriptInstance.HumanoidRecord>
 
 class FulfilmentProviderScriptInstance : SCRIPT_INSTANCE {
 
@@ -115,19 +111,33 @@ class FulfilmentProviderScriptInstance : SCRIPT_INSTANCE {
 
 
         data class BasicAI(
-            val destination: COORDINATE,
+            val destination: COORDINATE?,
             val resourceCarried: String,
             val resourceA: Int,
             val occupation: String,
         )
 
+        data class AdvancedAI(
+            val state: String,
+            val plan: String,
+        )
+
         val basicAI: BasicAI
             get() = BasicAI(
                 destination = h.ai().destination,
-                resourceCarried = h.ai().resourceCarried().name.toString(),
+                resourceCarried = h.ai().resourceCarried()?.name.toString(),
                 resourceA = h.ai().resourceA(),
                 occupation = Str("").also { h.ai().getOccupation(h, it) }.toString()
             )
+
+        val advancedAI: AdvancedAI
+            get() {
+                val ai = h.ai() as? AIManager
+                return AdvancedAI(
+                    state = ai?.state()?.key ?: "null",
+                    plan = ai?.plan()?.key ?: "null"
+                )
+            }
     }
 
     override fun save(p0: FilePutter?) {

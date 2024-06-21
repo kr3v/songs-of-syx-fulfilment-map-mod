@@ -7,7 +7,7 @@ import script.SCRIPT.SCRIPT_INSTANCE
 
 
 class FulfilmentProviderScript : SCRIPT {
-    private lateinit var instance: FulfilmentProviderScriptInstance
+    lateinit var instance: FulfilmentProviderScriptInstance
 
     private val srv: Server = Server(this)
 

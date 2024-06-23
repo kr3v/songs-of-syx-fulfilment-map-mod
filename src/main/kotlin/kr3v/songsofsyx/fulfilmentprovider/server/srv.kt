@@ -9,15 +9,18 @@ import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 import kr3v.songsofsyx.fulfilmentprovider.Either
 import kr3v.songsofsyx.fulfilmentprovider.FulfilmentProviderScript
-import kr3v.songsofsyx.fulfilmentprovider.script.FulfilmentProviderScriptInstance
+import kr3v.songsofsyx.fulfilmentprovider.script.HumanoidInfoProvider
 import kr3v.songsofsyx.fulfilmentprovider.script.Services
-import kr3v.songsofsyx.fulfilmentprovider.script.State
+import settlement.entity.humanoid.Humanoid
 import java.awt.image.BufferedImage
 import java.io.BufferedOutputStream
 import javax.imageio.ImageIO
 
 
 class Server(private val script: FulfilmentProviderScript) {
+
+    private val srv = HumanoidInfoProvider()
+
     internal fun route(port: Int) {
         embeddedServer(CIO, port = port) {
             routing {
@@ -37,7 +40,7 @@ class Server(private val script: FulfilmentProviderScript) {
     }
 
     private suspend fun PipelineContext<Unit, ApplicationCall>.occupationStatsImpl() {
-        val st = when (val s = getScriptInstanceState()) {
+        val st = when (val s = script.listProvider.getHumanoids()) {
             is Either.Right -> {
                 call.respond(HttpStatusCode.BadRequest, s.value.message)
                 return
@@ -53,9 +56,8 @@ class Server(private val script: FulfilmentProviderScript) {
 
         appendRow("Occupation", "Resource Amount", "Resource Carried", "State", "Plan")
         for (h in st.reversed()) {
-            val b = h.basicAI
-            val a = h.advancedAI
-            appendRow(b.occupation, b.resourceA, b.resourceCarried, a.state, a.plan)
+            val b = srv.ai(h)
+            appendRow(b.occupation, b.resourceA, b.resourceCarried, b.state, b.plan)
         }
 
         call.respondText(csvWriter.toString(), contentType = ContentType.Text.CSV, status = HttpStatusCode.OK)
@@ -68,7 +70,7 @@ class Server(private val script: FulfilmentProviderScript) {
             return
         }
 
-        val st = when (val s = getScriptInstanceState()) {
+        val st = when (val s = script.listProvider.getHumanoids()) {
             is Either.Right -> {
                 call.respond(HttpStatusCode.BadRequest, s.value.message)
                 return
@@ -96,31 +98,14 @@ class Server(private val script: FulfilmentProviderScript) {
         }
     }
 
-    data class Error<T>(val message: T)
-
-    private fun getScriptInstanceState(): Either<State, Error<String>> {
-        if (!script.hasInstance()) {
-            return Either.Right(Error("Script instance not initialized"))
-        }
-
-        if (!script.instance.isStateInitialized()) {
-            return Either.Right(Error("Script state not initialized"))
-        }
-
-        script.instance.stateLock.lock()
-        val st = script.instance.state
-        script.instance.stateLock.unlock()
-        return Either.Left(st)
-    }
-
     private fun serviceAccessBuildImage(
-        st: List<FulfilmentProviderScriptInstance.HumanoidRecord>,
+        st: List<Humanoid>,
         serviceType: Services.Type,
     ): BufferedImage {
         val img = BufferedImage(2000, 2000, BufferedImage.TYPE_INT_RGB)
         val g = img.graphics
 
-        val posToAccess = st.groupBy({ it.pos }) { it.serviceAccess[serviceType]!! }
+        val posToAccess = st.groupBy({ srv.pos(it) }) { srv.servicesAccess(it)[serviceType]!! }
 
         posToAccess.forEach { (k, v) ->
             val r = v.reduce { acc, record ->

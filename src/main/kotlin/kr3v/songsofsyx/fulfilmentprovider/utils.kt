@@ -19,6 +19,8 @@ object Log {
     }
 }
 
+data class ErrorS(val message: String)
+
 sealed class Either<A, B> {
     data class Left<A, B>(val value: A) : Either<A, B>()
     data class Right<A, B>(val value: B) : Either<A, B>()

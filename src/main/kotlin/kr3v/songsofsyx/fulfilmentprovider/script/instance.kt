@@ -109,6 +109,8 @@ class FulfilmentProviderScriptInstance : SCRIPT_INSTANCE, HumanoidListProvider {
     private var lastDays = -1
 
     override fun update(d: Double) {
+        occInfoCollector.update(d)
+
         if (d <= 1e-6) {
             return
         }
@@ -129,7 +131,6 @@ class FulfilmentProviderScriptInstance : SCRIPT_INSTANCE, HumanoidListProvider {
         state = stateUpd
         stateLock.unlock()
 
-        occInfoCollector.update(d)
     }
 
     override fun save(p0: FilePutter?) {
@@ -178,7 +179,16 @@ class OccupationInfoCollector(
         return f
     }
 
-    fun update(d: Double) {
+    private var err: Double = 0.0
+
+    fun update(d0: Double) {
+        if (d0 <= 1e-6) {
+            err += d0
+            return
+        }
+        val d = d0 + err
+        err = 0.0
+
         val hs = lp.getHumanoids().let { hs ->
             if (hs is Either.Right) {
                 Log.println("OccupationInfoCollector update: ${hs.value.message}")

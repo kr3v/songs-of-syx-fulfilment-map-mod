@@ -103,6 +103,9 @@ interface HumanoidListProvider {
 }
 
 class FulfilmentProviderScriptInstance : SCRIPT_INSTANCE, HumanoidListProvider {
+
+    lateinit var occInfoCollector: OccupationInfoCollector
+
     private var lastDays = -1
 
     override fun update(d: Double) {
@@ -125,6 +128,8 @@ class FulfilmentProviderScriptInstance : SCRIPT_INSTANCE, HumanoidListProvider {
         stateLock.lock()
         state = stateUpd
         stateLock.unlock()
+
+        occInfoCollector.update(d)
     }
 
     override fun save(p0: FilePutter?) {

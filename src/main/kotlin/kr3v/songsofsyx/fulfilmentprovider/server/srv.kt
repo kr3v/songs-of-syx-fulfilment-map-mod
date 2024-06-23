@@ -31,7 +31,7 @@ class Server(private val script: FulfilmentProviderScript) {
                 get("/service-access/{service}.png") {
                     serviceAccessImpl()
                 }
-                get("/occupations-stats/{duration}") {
+                get("/occupation-stats/{duration}") {
                     occupationStatsImpl()
                 }
             }

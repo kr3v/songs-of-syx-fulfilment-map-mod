@@ -35,6 +35,7 @@ class FulfilmentProviderScript : SCRIPT {
         infoProvider = HumanoidInfoProvider()
         listProvider = instance
         occupationInfoCollector = OccupationInfoCollector(listProvider, infoProvider)
+        instance.occInfoCollector = occupationInfoCollector
         return v
     }
 

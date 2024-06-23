@@ -16,6 +16,7 @@ import snake2d.util.sprite.text.Str
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.math.abs
 import kotlin.random.Random
 
 
@@ -243,7 +244,7 @@ object SongsOfSyx {
 
     class Duration(val seconds: Double) {
 
-        constructor(i1: Instant, i2: Instant) : this(i2.seconds - i1.seconds)
+        constructor(i1: Instant, i2: Instant) : this(abs(i2.seconds - i1.seconds))
 
         val hours: Double
             get() = seconds / TIME.secondsPerHour

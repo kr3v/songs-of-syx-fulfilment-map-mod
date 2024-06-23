@@ -239,12 +239,16 @@ object SongsOfSyx {
         val years: Double
             get() = seconds / TIME.seasons().cycleSeconds()
 
-
         operator fun compareTo(duration: SongsOfSyx.Duration): Int = seconds.compareTo(duration.seconds)
+
+        companion object {
+            fun years(y: Double) = Duration(y * TIME.seasons().cycleSeconds())
+            fun seasons(s: Double) = Duration(s * TIME.days().cycleSeconds())
+            fun days(d: Double) = Duration(d * TIME.secondsPerDay)
+            fun hours(h: Double) = Duration(h * TIME.secondsPerHour)
+        }
     }
 }
-
-class SongsOfSyxDuration()
 
 private fun <R> ReentrantLock.locked(function: () -> R): R {
     lock()
